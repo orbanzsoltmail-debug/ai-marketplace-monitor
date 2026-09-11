@@ -77,6 +77,39 @@ def test_extract_empty_values_treated_as_unset(tmp_path: Path) -> None:
 # ----------------------------------------------------------------------
 
 
+def test_extract_prefers_dedicated_webui_env_vars(tmp_path: Path) -> None:
+    """Dedicated web UI credentials must win over marketplace credentials."""
+    p = _write(
+        tmp_path,
+        '[marketplace.facebook]\nusername = "cfguser"\npassword = "cfgpass"\n',
+    )
+    with patch.dict(
+        os.environ,
+        {
+            "AIMM_WEBUI_USERNAME": "admin",
+            "AIMM_WEBUI_PASSWORD": "webpass",
+            "FACEBOOK_USERNAME": "envuser",
+            "FACEBOOK_PASSWORD": "envpass",
+        },
+        clear=True,
+    ):
+        got = extract_credentials([p])
+    assert got.username == "admin"
+    assert got.password == "webpass"
+
+
+def test_extract_webui_env_vars_need_both(tmp_path: Path) -> None:
+    """An incomplete dedicated pair falls through to other credentials."""
+    p = _write(
+        tmp_path,
+        '[marketplace.facebook]\nusername = "cfguser"\npassword = "cfgpass"\n',
+    )
+    with patch.dict(os.environ, {"AIMM_WEBUI_USERNAME": "admin"}, clear=True):
+        got = extract_credentials([p])
+    assert got.username == "cfguser"
+    assert got.password == "cfgpass"
+
+
 def test_extract_falls_back_to_env_vars(tmp_path: Path) -> None:
     """When config has no credentials, FACEBOOK_USERNAME/PASSWORD are used."""
     p = _write(tmp_path, "[marketplace.facebook]\n")
