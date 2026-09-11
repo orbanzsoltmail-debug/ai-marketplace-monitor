@@ -31,13 +31,13 @@ _DEFAULT_CONFIG_TEMPLATE = """\
 # See https://ai-marketplace-monitor.readthedocs.io/ for a full reference.
 
 [marketplace.facebook]
-username = "${FACEBOOK_USERNAME}"
-password = "${FACEBOOK_PASSWORD}"
-search_city = "houston"
+# Add Facebook credentials here later from the authenticated web UI,
+# or set FACEBOOK_USERNAME / FACEBOOK_PASSWORD in the environment.
+search_city = "nagykoros"
 
 [item.example]
 # Describe what you want to find. Duplicate this block for each item.
-search_phrases = "gopro hero"
+search_phrases = "telefon"
 # min_price = 50
 # max_price = 300
 
