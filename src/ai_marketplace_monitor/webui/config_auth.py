@@ -2,7 +2,8 @@
 
 Two modes:
 
-1. A ``[marketplace.*]`` section has ``username`` and ``password`` set,
+1. ``AIMM_WEBUI_USERNAME`` and ``AIMM_WEBUI_PASSWORD`` are present,
+   a ``[marketplace.*]`` section has ``username`` and ``password`` set,
    or the ``FACEBOOK_USERNAME`` / ``FACEBOOK_PASSWORD`` environment
    variables are present → the web UI gates access behind those
    credentials.
@@ -60,11 +61,17 @@ def _deep_merge(dst: Dict[str, Any], src: Dict[str, Any]) -> None:
 def extract_credentials(config_files: List[Path]) -> ExtractedCredentials:
     """Return marketplace credentials from the config, or (None, None).
 
-    Checks all ``[marketplace.*]`` sections and returns the first one
-    that has both ``username`` and ``password`` set.  If nothing is
-    found in the config files, falls back to the ``FACEBOOK_USERNAME``
-    and ``FACEBOOK_PASSWORD`` environment variables.
+    Dedicated web UI credentials take priority. Otherwise, checks all
+    ``[marketplace.*]`` sections and returns the first one that has both
+    ``username`` and ``password`` set. If nothing is found in the config
+    files, falls back to the ``FACEBOOK_USERNAME`` and
+    ``FACEBOOK_PASSWORD`` environment variables.
     """
+    webui_user = os.environ.get("AIMM_WEBUI_USERNAME")
+    webui_pass = os.environ.get("AIMM_WEBUI_PASSWORD")
+    if webui_user and webui_pass:
+        return ExtractedCredentials(username=webui_user, password=webui_pass)
+
     merged = _parse_toml(config_files)
     marketplaces = merged.get("marketplace")
     if isinstance(marketplaces, dict):
